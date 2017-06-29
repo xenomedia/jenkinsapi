@@ -175,22 +175,33 @@ class JenkinsJob {
    * @param $tree
    *   Array describing what data to return. It should be on the form.
    *
-   * @todo fix this method
+   * @return array
    */
-  /*public function getMultiple($depth = 0, $tree = NULL, &$response = NULL) {
-    // @todo: honor $tree argument.
-    $query = array(
-      'depth' => $depth,
-    );
-
-    $name = rawurlencode($name);
-
-    if (jenkins_request('/api/json', $response, $query)) {
-      return json_decode($response->data);
+  public function getMultiple($depth = 0, $tree = NULL, &$response = NULL) {
+    if (!empty($tree)) {
+      $query = [
+        'query' => [
+          'depth' => $depth,
+          'tree' => $tree,
+        ],
+      ];
+    }
+    else {
+      $query = [
+        'query' => [
+          'depth' => $depth,
+        ],
+      ];
     }
 
-    return FALSE;
-  }*/
+    $list = $this->client->request('/api/json', $query)->getStatusCode() == 200;
+    if ($list) {
+      $response = $this->client->request('/api/json', $query)->getBody();
+      return json_decode($response);
+    }
+
+    return [];
+  }
 
   /**
    * Extracts the jenkins build queue id from the HTTP response object.
